@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tworzenie postaci RPG</title>
+</head>
+<body>
+    <h1>Tworzenie postaci RPG</h1>
+    <form id="characterForm">
+        <div id="characteristics">
+            <!-- Cechy postaci -->
+        </div>
+        <input type="submit" value="Zapisz postać">
+    </form>
+    <button onclick="loadCharacter()">Wczytaj postać</button>
+    <p id="characterCode"></p>
+
+    <script>
+        // Lista cech
+        var characteristics = ['S (Siła)', 'KON (Kondycja)', 'BC (Budowa Ciała)', 'ZR (Zręczność)', 'WYG (Wygląd)', 'INT (Inteligencja)', 'MOC', 'WYK (Wykształcenie)', 'Ruch'];
+
+        // Dodajemy cechy do formularza
+        var characteristicsDiv = document.getElementById('characteristics');
+        characteristics.forEach(function(characteristic) {
+            var label = document.createElement('label');
+            label.textContent = characteristic + ':';
+            characteristicsDiv.appendChild(label);
+            characteristicsDiv.appendChild(document.createElement('br'));
+
+            var inputFull = document.createElement('input');
+            inputFull.type = 'number';
+            inputFull.id = characteristic + 'Full';
+            inputFull.name = characteristic + 'Full';
+            inputFull.min = 0;
+            if (characteristic !== 'Ruch') {
+                inputFull.addEventListener('input', function() {
+                    document.getElementById(characteristic + 'Half').value = Math.floor(inputFull.value / 2);
+                    document.getElementById(characteristic + 'Fifth').value = Math.floor(inputFull.value / 5);
+                });
+            }
+            characteristicsDiv.appendChild(inputFull);
+
+            if (characteristic !== 'Ruch') {
+                var inputHalf = document.createElement('input');
+                inputHalf.type = 'number';
+                inputHalf.id = characteristic + 'Half';
+                inputHalf.name = characteristic + 'Half';
+                inputHalf.readOnly = true;
+                characteristicsDiv.appendChild(inputHalf);
+
+                var inputFifth = document.createElement('input');
+                inputFifth.type = 'number';
+                inputFifth.id = characteristic + 'Fifth';
+                inputFifth.name = characteristic + 'Fifth';
+                inputFifth.readOnly = true;
+                characteristicsDiv.appendChild(inputFifth);
+            }
+
+            characteristicsDiv.appendChild(document.createElement('br'));
+        });
+
+        document.getElementById('characterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var character = {};
+            characteristics.forEach(function(characteristic) {
+                character[characteristic] = {
+                    full: document.getElementById(characteristic + 'Full').value
+                };
+                if (characteristic !== 'Ruch') {
+                    character[characteristic].half = document.getElementById(characteristic + 'Half').value;
+                    character[characteristic].fifth = document.getElementById(characteristic + 'Fifth').value;
+                }
+            });
+            var characterCode = btoa(JSON.stringify(character));
+            localStorage.setItem('character', characterCode);
+            document.getElementById('characterCode').textContent = 'Twój unikalny kod postaci to: ' + characterCode;
+        });
+
+        function loadCharacter() {
+            var characterCode = localStorage.getItem('character');
+            if (characterCode) {
+                var character = JSON.parse(atob(characterCode));
+                characteristics.forEach(function(characteristic) {
+                    if (character[characteristic]) {
+                        document.getElementById(characteristic + 'Full').value = character[characteristic].full;
+                        if (characteristic !== 'Ruch') {
+                            document.getElementById(characteristic + 'Half').value = character[characteristic].half;
+                            document.getElementById(characteristic + 'Fifth').value = character[characteristic].fifth;
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
